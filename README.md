@@ -14,6 +14,24 @@ It is built as a **beginner-friendly open-source project**: real features, clear
 - 🧑‍💼 Host dashboard: create / edit / delete listings, accept or decline bookings
 - ⭐ Reviews (only after a completed stay) with automatic average rating
 
+## 📸 Screenshots
+
+### 1. Explore & Search
+Discover stays across India with live filters for destination, stay type, guests, and pricing.
+![Explore](docs/screenshots/explore.jpg)
+
+### 2. Listing Details & Booking
+View photos, host info, amenities checklist, and date-range booking with live price calculation.
+![Listing Detail](docs/screenshots/listing-detail.jpg)
+
+### 3. My Trips
+Manage upcoming and completed reservations with trip dates and cancellation controls.
+![My Trips](docs/screenshots/trips.jpg)
+
+### 4. Host Dashboard
+Manage booking requests, accept/decline guest reservations, and view listings.
+![Host Dashboard](docs/screenshots/host-dashboard.jpg)
+
 ## 🧱 Tech stack
 
 | Layer    | Tech                                 |
