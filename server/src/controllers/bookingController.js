@@ -1,6 +1,7 @@
 import Booking from '../models/Booking.js';
 import Listing from '../models/Listing.js';
 import asyncHandler from '../utils/asyncHandler.js';
+import { sendNewBookingEmail, sendBookingStatusEmail } from '../utils/mailer.js';
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -8,7 +9,7 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 export const createBooking = asyncHandler(async (req, res) => {
   const { listingId, checkIn, checkOut, guests } = req.body;
 
-  const listing = await Listing.findById(listingId);
+  const listing = await Listing.findById(listingId).populate('host', 'name email');
   if (!listing || !listing.isActive) {
     res.status(404);
     throw new Error('Listing not available');
@@ -45,6 +46,16 @@ export const createBooking = asyncHandler(async (req, res) => {
     guests,
     nights,
     totalPrice: nights * listing.pricePerNight,
+  });
+
+  // Non-blocking email notification to the host
+  sendNewBookingEmail({
+    booking,
+    listing,
+    guest: req.user,
+    host: listing.host,
+  }).catch((err) => {
+    console.error('Non-blocking error sending host notification:', err.message);
   });
 
   res.status(201).json(booking);
@@ -91,7 +102,9 @@ export const cancelBooking = asyncHandler(async (req, res) => {
 // PATCH /api/bookings/:id/status (host of the listing)
 export const updateBookingStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  const booking = await Booking.findById(req.params.id).populate('listing', 'host');
+  const booking = await Booking.findById(req.params.id)
+    .populate('listing', 'title host')
+    .populate('guest', 'name email');
   if (!booking) {
     res.status(404);
     throw new Error('Booking not found');
@@ -106,5 +119,13 @@ export const updateBookingStatus = asyncHandler(async (req, res) => {
   }
   booking.status = status;
   await booking.save();
+
+  // Non-blocking email notification to the guest
+  if (['confirmed', 'cancelled'].includes(status)) {
+    sendBookingStatusEmail({ booking, status }).catch((err) => {
+      console.error(`Non-blocking error sending ${status} guest notification:`, err.message);
+    });
+  }
+
   res.json(booking);
 });
