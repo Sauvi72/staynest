@@ -79,6 +79,19 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.9rem; colo
 .success { color: var(--success); }
 .loader { text-align: center; color: var(--muted); padding: 40px; }
 
+.skeleton-card { pointer-events: none; }
+.skeleton-thumb { aspect-ratio: 4 / 3; width: 100%; border-radius: var(--radius) var(--radius) 0 0; }
+.skeleton-bar { border-radius: 4px; }
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #ece5dc 0%, #f8f4ee 50%, #ece5dc 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .hero-img { width: 100%; max-height: 460px; object-fit: cover; border-radius: var(--radius); margin: 16px 0; }
 .detail-layout { display: grid; grid-template-columns: 1fr 360px; gap: 40px; align-items: start; }
 .detail-layout h2 { text-transform: capitalize; }
