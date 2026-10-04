@@ -9,6 +9,9 @@ export default function Trips() {
   const [bookings, setBookings] = useState(null);
   const [error, setError] = useState('');
 
+  const [confirmTrip, setConfirmTrip] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+
   const load = () =>
     api
       .get('/bookings/mine')
@@ -19,13 +22,17 @@ export default function Trips() {
     load();
   }, []);
 
-  // TODO: ask for confirmation before cancelling.
-  const cancel = async (id) => {
+  const handleConfirmCancel = async () => {
+    if (!confirmTrip) return;
+    setCancelling(true);
     try {
-      await api.patch(`/bookings/${id}/cancel`);
+      await api.patch(`/bookings/${confirmTrip._id}/cancel`);
+      setConfirmTrip(null);
       load();
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -54,12 +61,45 @@ export default function Trips() {
               <span className={`status status-${b.status}`}>{b.status}</span>
               <strong>{formatINR(b.totalPrice)}</strong>
               {['pending', 'confirmed'].includes(b.status) && (
-                <button className="btn btn-danger" onClick={() => cancel(b._id)}>Cancel</button>
+                <button className="btn btn-danger" onClick={() => setConfirmTrip(b)}>Cancel</button>
               )}
             </div>
           </div>
         ))}
       </div>
+
+      {confirmTrip && (
+        <div className="modal-overlay" role="dialog" aria-modal="true">
+          <div className="modal">
+            <h3>Cancel Trip</h3>
+            <p>
+              Are you sure you want to cancel your stay at{' '}
+              <strong>{confirmTrip.listing?.title || 'this stay'}</strong>?
+            </p>
+            <p className="muted small">
+              Dates: {formatDate(confirmTrip.checkIn)} → {formatDate(confirmTrip.checkOut)}
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                disabled={cancelling}
+                onClick={() => setConfirmTrip(null)}
+              >
+                Keep Booking
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                disabled={cancelling}
+                onClick={handleConfirmCancel}
+              >
+                {cancelling ? 'Cancelling...' : 'Confirm Cancellation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
